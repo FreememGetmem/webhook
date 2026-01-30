@@ -85,7 +85,7 @@ jobs:
         aws cloudformation deploy \
           --stack-name crm-lead-system \
           --template-file notifications/infrastructure/cloudformation.yaml \
-          --parameter-overrides ArtifactBucket=crm-lead-system-artifact-635374934580 \
+          --parameter-overrides LeadDataBucket=${{ secrets.S3_BUCKET }} \
           --capabilities CAPABILITY_NAMED_IAM
     
           
