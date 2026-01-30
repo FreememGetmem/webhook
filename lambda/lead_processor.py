@@ -132,10 +132,10 @@ def send_slack(enriched):
                                 {"type": "mrkdwn", "text": f"*Owner:*\n{enriched['lead_owner']}"},
                                 {"type": "mrkdwn", "text": f"*Funnel:*\n{enriched['funnel']}"},
                                 {"type": "mrkdwn", "text": f"*Status:*\n{enriched['status_label']}"}
-                        ]  
+                        ]
                     }]
-                } 
-        http.request('POST', webhook_url, body=json.dumps(message).encode('utf-8'), 
+                }
+        http.request('POST', webhook_url, body=json.dumps(message).encode('utf-8'),
                      headers={'Content-Type': 'application/json'})
         logger.info("Slack notification sent")
     except Exception as e:

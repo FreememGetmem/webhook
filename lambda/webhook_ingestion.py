@@ -86,7 +86,7 @@ def store_lead_in_s3(lead_data, full_body):
         s3.put_object(Bucket=BUCKET_NAME, Key=s3_key,
                       Body=json.dumps(storage_data, indent=2),
                       ContentType='application/json',
-                        Metadata={'lead_id': lead_id, 'processed_at': datetime.utcnow().isoformat()})        
+                      Metadata={'lead_id': lead_id, 'processed_at': datetime.utcnow().isoformat()})
         return s3_key
     except Exception as e:
         logger.error(f"S3 error: {str(e)}")
