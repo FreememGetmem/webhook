@@ -12,6 +12,7 @@ s3 = boto3.client('s3')
 BUCKET_NAME = os.environ.get('BUCKET_NAME')
 SOURCE_PREFIX = os.environ.get('SOURCE_PREFIX', 'source/')
 
+
 def lambda_handler(event, context):
     try:
         logger.info("Received webhook event")
@@ -44,6 +45,7 @@ def lambda_handler(event, context):
         logger.error(f"Error: {str(e)}", exc_info=True)
         return create_response(500, {"error": "Internal server error"})
 
+
 def validate_webhook(body):
     try:
         if 'event' not in body:
@@ -60,6 +62,7 @@ def validate_webhook(body):
         logger.error(f"Validation error: {str(e)}")
         return False
 
+
 def extract_lead_data(body):
     try:
         event = body['event']
@@ -75,6 +78,7 @@ def extract_lead_data(body):
     except Exception as e:
         logger.error(f"Extract error: {str(e)}")
         return None
+
 
 def store_lead_in_s3(lead_data, full_body):
     try:
@@ -103,6 +107,7 @@ def store_lead_in_s3(lead_data, full_body):
     except Exception as e:
         logger.error(f"S3 error: {str(e)}")
         raise
+
 
 def create_response(status_code, body):
     return {

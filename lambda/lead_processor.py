@@ -22,6 +22,7 @@ SLACK_SECRET_NAME = os.environ.get('SLACK_SECRET_NAME', '')
 USE_SLACK = os.environ.get('USE_SLACK', 'false').lower() == 'true'
 USE_EMAIL = os.environ.get('USE_EMAIL', 'false').lower() == 'true'
 
+
 def lambda_handler(event, context):
     try:
         logger.info(f"Processing {len(event.get('Records', []))} SQS messages")
@@ -38,6 +39,7 @@ def lambda_handler(event, context):
     except Exception as e:
         logger.error(f"Handler error: {str(e)}", exc_info=True)
         raise
+
 
 def process_lead(s3_record):
     bucket = s3_record['s3']['bucket']['name']
@@ -67,6 +69,7 @@ def process_lead(s3_record):
     # Send notifications
     send_notifications(enriched)
 
+
 def lookup_lead_owner(lead_id):
     try:
         url = f"https://{LOOKUP_BUCKET}.s3.us-east-1.amazonaws.com/{lead_id}.json"
@@ -80,6 +83,7 @@ def lookup_lead_owner(lead_id):
     except Exception as e:
         logger.error(f"Lookup error: {str(e)}")
         return None
+
 
 def enrich_lead_data(lead_data, owner_data):
     event_data = lead_data.get('event', {}).get('data', {})
@@ -103,6 +107,7 @@ def enrich_lead_data(lead_data, owner_data):
             'enriched_at': datetime.utcnow().isoformat()
         }
 
+
 def store_enriched_data(enriched, lead_id):
     s3_key = f"{TARGET_PREFIX}enriched_{lead_id}.json"
     s3.put_object(
@@ -113,11 +118,13 @@ def store_enriched_data(enriched, lead_id):
     )
     logger.info(f"Stored: s3://{BUCKET_NAME}/{s3_key}")
 
+
 def send_notifications(enriched):
     if USE_SLACK:
         send_slack(enriched)
     if USE_EMAIL and SNS_TOPIC_ARN:
         send_email(enriched)
+
 
 def send_slack(enriched):
     try:
@@ -146,6 +153,7 @@ def send_slack(enriched):
         logger.info("Slack notification sent")
     except Exception as e:
         logger.error(f"Slack error: {str(e)}")
+
 
 def send_email(enriched):
     try:
