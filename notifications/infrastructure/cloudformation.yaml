@@ -235,7 +235,7 @@ Resources:
           SOURCE_PREFIX: 'source/'
       Code:
         S3Bucket: !REF LeadDataBucket 
-        S3Key: lambda/webhook_ingetsion.zip 
+        S3Key: lambda2/webhook_ingetsion.zip 
           
 
   ProcessorLambda:
@@ -259,7 +259,7 @@ Resources:
           USE_EMAIL: !If [UseEmail, 'true', 'false']
       Code:
         S3Bucket: !REF LeadDataBucket 
-        S3Key: lambda/lead_processor.zip
+        S3Key: lambda1/lead_processor.zip
           
 
   # Event Source Mapping for SQS -> Lambda
