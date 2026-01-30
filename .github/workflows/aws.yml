@@ -41,9 +41,8 @@ jobs:
     # -----------------------------------
     - name: Build Lambda ZIP
       run: |
-        cd lambda
-        zip -r ../lambda/lead_processor.zip .
-        zip -r ../lambda/webhook_ingestion.zip .
+        zip -r lambda1/lead_processor.zip .
+        zip -r lambda2/webhook_ingestion.zip .
 
     # -----------------------------------
     # Configure AWS Credentials
@@ -60,8 +59,8 @@ jobs:
     # -----------------------------------
     - name: Upload Lambda package
       run: |
-        aws s3 cp lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda/lead_processor.zip
-        aws s3 cp webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda/webhook_ingestion.zip
+        aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda/lead_processor.zip
+        aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda/webhook_ingestion.zip
 
     # -----------------------------------
     # Deploy CloudFormation Stack
