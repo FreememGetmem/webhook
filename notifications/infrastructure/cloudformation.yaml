@@ -39,6 +39,8 @@ Resources:
   
   LeadDataBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Sub '${ProjectName}-leads-${AWS::AccountId}'
       VersioningConfiguration:
