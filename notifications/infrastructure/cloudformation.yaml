@@ -7,10 +7,7 @@ Parameters:
   ProjectName:
     Type: String
     Default: crm-lead-system
-    Description: Project name for resource naming  
-  ArtifactBucket:
-    Type: String
-    Default: crm-lead-system-artifacts-635374934580
+    Description: Project name for resource naming   
 
   SlackWebhookUrl:
     Type: String
@@ -105,7 +102,7 @@ Resources:
             Resource: !GetAtt DelayQueue.Arn
             Condition:
               ArnLike:
-                aws:SourceArn: !Sub "arn:aws:s3:::${ProjectName}-leads1-${AWS::AccountId}"
+                aws:SourceArn: !GetAtt LeadDataBucket.Arn
 
   # ============================================
   # SNS Topic for Email Notifications

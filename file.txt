@@ -1,0 +1,15 @@
+{
+    "StackEvents": [
+        {
+            "StackId": "arn:aws:cloudformation:us-west-1:635374934580:stack/crm-lead-system/3b70f900-fe00-11f0-937c-02b33e94335d",
+            "EventId": "3b7083d0-fe00-11f0-937c-02b33e94335d",
+            "StackName": "crm-lead-system",
+            "LogicalResourceId": "crm-lead-system",
+            "PhysicalResourceId": "arn:aws:cloudformation:us-west-1:635374934580:stack/crm-lead-system/3b70f900-fe00-11f0-937c-02b33e94335d",
+            "ResourceType": "AWS::CloudFormation::Stack",
+            "Timestamp": "2026-01-30T17:22:19.985000+00:00",
+            "ResourceStatus": "REVIEW_IN_PROGRESS",
+            "ResourceStatusReason": "User Initiated"
+        }
+    ]
+}
