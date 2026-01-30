@@ -78,9 +78,9 @@ jobs:
       run: |
         aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda1/lead_processor.zip
         aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
-        
+
         aws cloudformation validate-template \
-          --template-body file://notificatiobs/infrastructure/couldformationistia_pipeline.yaml
+          --template-body file://notifications/infrastructure/couldformationistia_pipeline.yaml
           
         aws cloudformation deploy \
           --stack-name wistia-pipeline \
