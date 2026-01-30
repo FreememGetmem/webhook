@@ -1,0 +1,373 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Automated Lead Assignment and Notification System
+  CRM Webhook -> API Gateway -> Lambda -> S3 -> SQS (10min delay) -> Lambda -> Lookup -> Notification
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: crm-lead-system
+    Description: Project name for resource naming
+
+  SlackWebhookUrl:
+    Type: String
+    NoEcho: true
+    Description: Slack incoming webhook URL for notifications (leave empty to skip)
+    Default: ''
+
+  NotificationEmail:
+    Type: String
+    Description: Email address for lead notifications (leave empty to skip)
+    Default: ''
+
+  DelaySeconds:
+    Type: Number
+    Default: 600
+    Description: Delay in seconds before processing lead (600 = 10 minutes)
+    MinValue: 0
+    MaxValue: 900
+
+Conditions:
+  UseSlack: !Not [!Equals [!Ref SlackWebhookUrl, '']]
+  UseEmail: !Not [!Equals [!Ref NotificationEmail, '']]
+
+Resources:
+
+  # ============================================
+  # S3 Bucket for Lead Data
+  # ============================================
+  
+  LeadDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-leads-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:*
+            Queue: !GetAtt DelayQueue.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: source/
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # ============================================
+  # SQS Queue with Delay
+  # ============================================
+  
+  DelayQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${ProjectName}-delay-queue'
+      DelaySeconds: !Ref DelaySeconds
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${ProjectName}-dlq'
+      MessageRetentionPeriod: 1209600
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  QueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref DelayQueue
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt DelayQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !GetAtt LeadDataBucket.Arn
+
+  # ============================================
+  # SNS Topic for Email Notifications
+  # ============================================
+  
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Condition: UseEmail
+    Properties:
+      TopicName: !Sub '${ProjectName}-notifications'
+      Subscription:
+        - Endpoint: !Ref NotificationEmail
+          Protocol: email
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # ============================================
+  # Secrets Manager for Slack Webhook
+  # ============================================
+  
+  SlackWebhookSecret:
+    Type: AWS::SecretsManager::Secret
+    Condition: UseSlack
+    Properties:
+      Name: !Sub '${ProjectName}-slack-webhook'
+      Description: Slack webhook URL for lead notifications
+      SecretString: !Sub '{"webhook_url":"${SlackWebhookUrl}"}'
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # ============================================
+  # IAM Roles
+  # ============================================
+  
+  WebhookLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-webhook-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: WebhookLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                Resource: !Sub '${LeadDataBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt LeadDataBucket.Arn
+
+  ProcessorLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-processor-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ProcessorLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub '${LeadDataBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt LeadDataBucket.Arn
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt DelayQueue.Arn
+              - !If
+                - UseEmail
+                - Effect: Allow
+                  Action:
+                    - sns:Publish
+                  Resource: !Ref NotificationTopic
+                - !Ref AWS::NoValue
+              - !If
+                - UseSlack
+                - Effect: Allow
+                  Action:
+                    - secretsmanager:GetSecretValue
+                  Resource: !Ref SlackWebhookSecret
+                - !Ref AWS::NoValue
+
+  # ============================================
+  # Lambda Functions
+  # ============================================
+  
+  WebhookLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-webhook'
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Role: !GetAtt WebhookLambdaRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref LeadDataBucket
+          SOURCE_PREFIX: 'source/'
+      Code:
+        S3Bucket: !REF LeadDataBucket 
+        S3Key: lambda/webhook_ingetsion.zip 
+          
+
+  ProcessorLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-processor'
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Role: !GetAtt ProcessorLambdaRole.Arn
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref LeadDataBucket
+          SOURCE_PREFIX: 'source/'
+          TARGET_PREFIX: 'target/'
+          LOOKUP_BUCKET: 'dea-lead-owner'
+          SNS_TOPIC_ARN: !If [UseEmail, !Ref NotificationTopic, '']
+          SLACK_SECRET_NAME: !If [UseSlack, !Ref SlackWebhookSecret, '']
+          USE_SLACK: !If [UseSlack, 'true', 'false']
+          USE_EMAIL: !If [UseEmail, 'true', 'false']
+      Code:
+        S3Bucket: !REF LeadDataBucket 
+        S3Key: lambda/lead_processor.zip
+          
+
+  # Event Source Mapping for SQS -> Lambda
+  ProcessorEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt DelayQueue.Arn
+      FunctionName: !Ref ProcessorLambda
+      BatchSize: 10
+      Enabled: true
+
+  # ============================================
+  # API Gateway
+  # ============================================
+  
+  WebhookApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${ProjectName}-webhook-api'
+      Description: 'API for receiving CRM webhook events'
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  WebhookResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref WebhookApi
+      ParentId: !GetAtt WebhookApi.RootResourceId
+      PathPart: 'webhook'
+
+  WebhookMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref WebhookApi
+      ResourceId: !Ref WebhookResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebhookLambda.Arn}/invocations'
+        IntegrationResponses:
+          - StatusCode: 200
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+
+  WebhookDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: WebhookMethod
+    Properties:
+      RestApiId: !Ref WebhookApi
+      StageName: 'prod'
+
+  LambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref WebhookLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebhookApi}/*/*'
+
+# ============================================
+# Outputs
+# ============================================
+
+Outputs:
+  WebhookUrl:
+    Description: 'API Gateway endpoint URL for CRM webhooks'
+    Value: !Sub 'https://${WebhookApi}.execute-api.${AWS::Region}.amazonaws.com/prod/webhook'
+    Export:
+      Name: !Sub '${AWS::StackName}-WebhookUrl'
+
+  BucketName:
+    Description: 'S3 bucket for lead data'
+    Value: !Ref LeadDataBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+
+  DelayQueueUrl:
+    Description: 'SQS queue URL'
+    Value: !Ref DelayQueue
+    Export:
+      Name: !Sub '${AWS::StackName}-QueueUrl'
+
+  DeadLetterQueueUrl:
+    Description: 'Dead letter queue URL'
+    Value: !Ref DeadLetterQueue
+    Export:
+      Name: !Sub '${AWS::StackName}-DLQUrl'
+
+  SNSTopicArn:
+    Condition: UseEmail
+    Description: 'SNS topic ARN for email notifications'
+    Value: !Ref NotificationTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-SNSTopicArn'
+
+  WebhookLambdaName:
+    Description: 'Webhook Lambda function name'
+    Value: !Ref WebhookLambda
+    Export:
+      Name: !Sub '${AWS::StackName}-WebhookLambda'
+
+  ProcessorLambdaName:
+    Description: 'Processor Lambda function name'
+    Value: !Ref ProcessorLambda
+    Export:
+      Name: !Sub '${AWS::StackName}-ProcessorLambda'
