@@ -1,5 +1,4 @@
 # Python dependencies for CRM Lead System Lambda functions
-
 # AWS SDK (included in Lambda runtime, but listed for local development)
 boto3>=1.26.0
 
