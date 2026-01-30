@@ -15,25 +15,25 @@ SOURCE_PREFIX = os.environ.get('SOURCE_PREFIX', 'source/')
 
 def lambda_handler(event, context):
     try:
-        logger.info("Received webhook event")        
+        logger.info("Received webhook event")
         if 'body' in event:
             body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
         else:
-            body = event        
+            body = event
         if not validate_webhook(body):
             logger.error("Invalid webhook payload")
-            return create_response(400, {"error": "Invalid webhook payload"})                
-        lead_data = extract_lead_data(body)        
+            return create_response(400, {"error": "Invalid webhook payload"})
+        lead_data = extract_lead_data(body)
         if not lead_data:
             logger.error("Could not extract lead data")
-            return create_response(400, {"error": "Invalid lead data"})        
-        s3_key = store_lead_in_s3(lead_data, body)            
-        logger.info(f"Successfully stored lead: {lead_data['lead_id']} at {s3_key}")        
+            return create_response(400, {"error": "Invalid lead data"})
+        s3_key = store_lead_in_s3(lead_data, body)
+        logger.info(f"Successfully stored lead: {lead_data['lead_id']} at {s3_key}")
         return create_response(200, {
                                         "message": "Lead received and stored successfully",
                                         "lead_id": lead_data['lead_id'],
                                         "s3_key": s3_key
-                                                })        
+                                                })
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         return create_response(500, {"error": "Internal server error"})
@@ -77,17 +77,13 @@ def store_lead_in_s3(lead_data, full_body):
     try:
         lead_id = lead_data['lead_id']
         filename = f"crm_event_{lead_id}.json"
-        s3_key = f"{SOURCE_PREFIX}{filename}"        
+        s3_key = f"{SOURCE_PREFIX}{filename}"   
         storage_data = {
                         **full_body,
                         'processed_at': datetime.utcnow().isoformat(),
                         'extracted_lead_data': lead_data
-                        }        
-        s3.put_object(
-        Bucket=BUCKET_NAME,
-        Key=s3_key,
-        Body=json.dumps(storage_data, indent=2),
-        ContentType='application/json',
+                        }
+        s3.put_object(Bucket=BUCKET_NAME, Key=s3_key, Body=json.dumps(storage_data, indent=2), ContentType='application/json',
             Metadata={
                 'lead_id': lead_id,
                 'processed_at': datetime.utcnow().isoformat()
