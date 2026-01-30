@@ -53,15 +53,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
-
-    # -----------------------------------
-    # Upload Lambda ZIP to S3
-    # -----------------------------------
-    - name: Upload Lambda package
-      run: |
-        aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda1/lead_processor.zip
-        aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
+        aws-region: ${{ secrets.AWS_REGION }}    
 
     # -----------------------------------
     # Deploy CloudFormation Stack
@@ -78,7 +70,15 @@ jobs:
         --bucket "${{ secrets.S3_BUCKET }}" \
         --region "${{ secrets.AWS_REGION }}" \
         --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }}"        
-
+    
+    # -----------------------------------
+    # Upload Lambda ZIP to S3
+    # -----------------------------------
+    - name: Upload Lambda package
+      run: |
+        aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda1/lead_processor.zip
+        aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
+        
         aws cloudformation validate-template \
           --template-body file://notificatiobs/infrastructure/couldformationistia_pipeline.yaml
           
@@ -87,4 +87,5 @@ jobs:
           --template-file notifications/infrastructure/couldformationistia_pipeline.yaml \
           --parameter-overrides LeadDataBucket=${{ secrets.S3_BUCKET }} \
           --capabilities CAPABILITY_NAMED_IAM
+    
           
