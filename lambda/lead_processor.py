@@ -25,8 +25,7 @@ USE_EMAIL = os.environ.get('USE_EMAIL', 'false').lower() == 'true'
 
 def lambda_handler(event, context):
     try:
-        logger.info(f"Processing {len(event.get('Records', []))} SQS messages")
-        
+        logger.info(f"Processing {len(event.get('Records', []))} SQS messages")        
         for record in event.get('Records', []):
             try:
                 message_body = json.loads(record['body'])
@@ -35,7 +34,7 @@ def lambda_handler(event, context):
                         process_lead(s3_record)
             except Exception as e:
                 logger.error(f"Error processing record: {str(e)}", exc_info=True)        
-            return {'statusCode': 200}
+                return {'statusCode': 200}
     except Exception as e:
         logger.error(f"Handler error: {str(e)}", exc_info=True)
         raise
@@ -43,29 +42,22 @@ def lambda_handler(event, context):
 
 def process_lead(s3_record):
     bucket = s3_record['s3']['bucket']['name']
-    key = s3_record['s3']['object']['key']
-    
-    logger.info(f"Processing: s3://{bucket}/{key}")
-    
+    key = s3_record['s3']['object']['key']    
+    logger.info(f"Processing: s3://{bucket}/{key}")    
     # Download lead data
     response = s3.get_object(Bucket=bucket, Key=key)
-    lead_data = json.loads(response['Body'].read().decode('utf-8'))
-    
+    lead_data = json.loads(response['Body'].read().decode('utf-8'))    
     # Extract lead_id
     lead_id = lead_data.get('event', {}).get('lead_id')
     if not lead_id:
         logger.error("No lead_id found")
-        return
-    
+        return    
     # Lookup owner data
-    owner_data = lookup_lead_owner(lead_id)
-    
+    owner_data = lookup_lead_owner(lead_id)    
     # Enrich data
-    enriched = enrich_lead_data(lead_data, owner_data)
-    
+    enriched = enrich_lead_data(lead_data, owner_data)    
     # Store enriched data
-    store_enriched_data(enriched, lead_id)
-    
+    store_enriched_data(enriched, lead_id)    
     # Send notifications
     send_notifications(enriched)
 
@@ -73,8 +65,7 @@ def process_lead(s3_record):
 def lookup_lead_owner(lead_id):
     try:
         url = f"https://{LOOKUP_BUCKET}.s3.us-east-1.amazonaws.com/{lead_id}.json"
-        logger.info(f"Looking up: {url}")
-        
+        logger.info(f"Looking up: {url}")        
         response = http.request('GET', url)
         if response.status == 200:
             return json.loads(response.data.decode('utf-8'))
@@ -87,8 +78,7 @@ def lookup_lead_owner(lead_id):
 
 def enrich_lead_data(lead_data, owner_data):
     event_data = lead_data.get('event', {}).get('data', {})
-    extracted = lead_data.get('extracted_lead_data', {})
-    
+    extracted = lead_data.get('extracted_lead_data', {})    
     if not owner_data:
         owner_data = {
                         'lead_email': 'not-available@example.com',
@@ -129,11 +119,9 @@ def send_notifications(enriched):
 def send_slack(enriched):
     try:
         if not SLACK_SECRET_NAME:
-            return
-        
+            return        
         secret = secrets.get_secret_value(SecretId=SLACK_SECRET_NAME)
-        webhook_url = json.loads(secret['SecretString'])['webhook_url']
-        
+        webhook_url = json.loads(secret['SecretString'])['webhook_url']        
         message = {
                     "text": "🎯 New Lead Alert",
                     "blocks": [{
@@ -147,8 +135,7 @@ def send_slack(enriched):
                     {"type": "mrkdwn", "text": f"*Status:*\n{enriched['status_label']}"}
                         ]
                     }]
-                }
-        
+                }        
         http.request('POST', webhook_url, body=json.dumps(message).encode('utf-8'), headers={'Content-Type': 'application/json'})
         logger.info("Slack notification sent")
     except Exception as e:
