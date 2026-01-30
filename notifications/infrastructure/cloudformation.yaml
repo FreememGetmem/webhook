@@ -39,7 +39,6 @@ Resources:
   
   LeadDataBucket:
     Type: AWS::S3::Bucket
-    DependsOn: QueuePolicy
     Properties:
       BucketName: !Sub '${ProjectName}-leads1-${AWS::AccountId}'
       VersioningConfiguration:
