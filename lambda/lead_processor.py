@@ -25,7 +25,7 @@ USE_EMAIL = os.environ.get('USE_EMAIL', 'false').lower() == 'true'
 
 def lambda_handler(event, context):
     try:
-        logger.info(f"Processing {len(event.get('Records', []))} SQS messages")        
+        logger.info(f"Processing {len(event.get('Records', []))} SQS messages")
         for record in event.get('Records', []):
             try:
                 message_body = json.loads(record['body'])
@@ -162,4 +162,3 @@ def send_email(enriched):
         logger.info("Email notification sent")
     except Exception as e:
         logger.error(f"Email error: {str(e)}")
-        
