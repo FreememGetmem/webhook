@@ -63,12 +63,7 @@ jobs:
         
         aws cloudformation delete-stack --stack-name crm-lead-system --region us-west-1
 
-        aws cloudformation wait stack-delete-complete --stack-name crm-lead-system --region us-west-1
-        
-        aws s3api create-bucket \
-        --bucket "crm-lead-system-artifacts-635374934580" \
-        --region "${{ secrets.AWS_REGION }}" \
-        --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }}" 
+        aws cloudformation wait stack-delete-complete --stack-name crm-lead-system --region us-west-1        
 
         aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET }} 2>/dev/null || \
         aws s3api create-bucket \
@@ -94,3 +89,7 @@ jobs:
           --capabilities CAPABILITY_NAMED_IAM
     
           
+# aws s3api create-bucket \
+#        --bucket "crm-lead-system-artifacts-635374934580" \
+###        --region ${{ secrets \
+#        --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }" 
