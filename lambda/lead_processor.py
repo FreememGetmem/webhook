@@ -84,7 +84,7 @@ def enrich_lead_data(lead_data, owner_data):
                         'lead_email': 'not-available@example.com',
                         'lead_owner': 'Unassigned',
                         'funnel': 'Unknown'
-                                }    
+                    }
         return {
             'lead_id': owner_data.get('lead_id', extracted.get('lead_id')),
             'display_name': event_data.get('display_name', extracted.get('display_name', 'Unknown')),
@@ -126,13 +126,13 @@ def send_slack(enriched):
                     "blocks": [{
                         "type": "section",
                         "fields": [
-                                    {"type": "mrkdwn", "text": f"*Name:*\n{enriched['display_name']}"},
-                                    {"type": "mrkdwn", "text": f"*Lead ID:*\n{enriched['lead_id']}"},
-                                    {"type": "mrkdwn", "text": f"*Email:*\n{enriched['lead_email']}"},
-                                    {"type": "mrkdwn", "text": f"*Owner:*\n{enriched['lead_owner']}"},
-                                    {"type": "mrkdwn", "text": f"*Funnel:*\n{enriched['funnel']}"},
-                                    {"type": "mrkdwn", "text": f"*Status:*\n{enriched['status_label']}"}
-                                    ]  
+                                {"type": "mrkdwn", "text": f"*Name:*\n{enriched['display_name']}"},
+                                {"type": "mrkdwn", "text": f"*Lead ID:*\n{enriched['lead_id']}"},
+                                {"type": "mrkdwn", "text": f"*Email:*\n{enriched['lead_email']}"},
+                                {"type": "mrkdwn", "text": f"*Owner:*\n{enriched['lead_owner']}"},
+                                {"type": "mrkdwn", "text": f"*Funnel:*\n{enriched['funnel']}"},
+                                {"type": "mrkdwn", "text": f"*Status:*\n{enriched['status_label']}"}
+                                ]  
                     }]
                 }        
         http.request('POST', webhook_url, body=json.dumps(message).encode('utf-8'), headers={'Content-Type': 'application/json'})

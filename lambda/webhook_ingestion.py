@@ -77,17 +77,19 @@ def store_lead_in_s3(lead_data, full_body):
     try:
         lead_id = lead_data['lead_id']
         filename = f"crm_event_{lead_id}.json"
-        s3_key = f"{SOURCE_PREFIX}{filename}"   
+        s3_key = f"{SOURCE_PREFIX}{filename}"
         storage_data = {
                         **full_body,
                         'processed_at': datetime.utcnow().isoformat(),
                         'extracted_lead_data': lead_data
                         }
-        s3.put_object(Bucket=BUCKET_NAME, Key=s3_key, Body=json.dumps(storage_data, indent=2), ContentType='application/json',
-            Metadata={
-                'lead_id': lead_id,
-                'processed_at': datetime.utcnow().isoformat()
-            }
+        s3.put_object(Bucket=BUCKET_NAME, Key=s3_key, 
+                      Body=json.dumps(storage_data, indent=2), 
+                      ContentType='application/json',
+                        Metadata={
+                                    'lead_id': lead_id,
+                                    'processed_at': datetime.utcnow().isoformat()
+                                }
         )        
         return s3_key
     except Exception as e:
@@ -99,8 +101,8 @@ def create_response(status_code, body):
     return {
             'statusCode': status_code,
             'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
                     },
-                    'body': json.dumps(body)
+            'body': json.dumps(body)
         }
