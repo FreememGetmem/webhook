@@ -7,20 +7,7 @@ Parameters:
   ProjectName:
     Type: String
     Default: crm-lead-system
-    Description: Project name for resource naming
-
-  UseExistingBucket:
-    Type: String
-    Default: 'false'
-    AllowedValues:
-      - 'true'
-      - 'false'
-    Description: Set to 'true' if bucket already exists
-
-  ExistingBucketName:
-    Type: String
-    Default: ''
-    Description: Name of existing bucket (only if UseExistingBucket is true)
+    Description: Project name for resource naming  
 
   SlackWebhookUrl:
     Type: String
@@ -41,7 +28,6 @@ Parameters:
     MaxValue: 900
 
 Conditions:
-  CreateNewBucket: !Equals [!Ref UseExistingBucket, 'false']
   UseSlack: !Not [!Equals [!Ref SlackWebhookUrl, '']]
   UseEmail: !Not [!Equals [!Ref NotificationEmail, '']]
 
