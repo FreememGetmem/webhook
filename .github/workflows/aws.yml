@@ -58,14 +58,26 @@ jobs:
     # -----------------------------------
     # Deploy CloudFormation Stack
     # -----------------------------------
+    - name: Deploy Infrastructure
+      run: |        
+        
+        aws cloudformation delete-stack --stack-name crm-lead-system --region us-west-1
+
+        aws cloudformation wait stack-delete-complete --stack-name crm-lead-system --region us-west-1        
+
+        aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET }} 2>/dev/null || \
+        aws s3api create-bucket \
+        --bucket "${{ secrets.S3_BUCKET }}" \
+        --region "${{ secrets.AWS_REGION }}" \
+        --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }}"        
     
     # -----------------------------------
     # Upload Lambda ZIP to S3
     # -----------------------------------
     - name: Upload Lambda package
       run: |
-        aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda1/lead_processor.zip
-        aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
+        aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda/lead_processor.zip
+        aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda/webhook_ingestion.zip
 
         aws cloudformation validate-template \
           --template-body file://notifications/infrastructure/cloudformation.yaml
@@ -73,7 +85,7 @@ jobs:
         aws cloudformation deploy \
           --stack-name crm-lead-system \
           --template-file notifications/infrastructure/cloudformation.yaml \
-          --parameter-overrides LeadDataBucketName=${{ secrets.S3_BUCKET }} \
+          --parameter-overrides LeadDataBucketName=crm-lead-system-leads1-635374934580 \
           --capabilities CAPABILITY_NAMED_IAM
     
           
@@ -81,8 +93,3 @@ jobs:
 #        --bucket "crm-lead-system-artifacts-635374934580" \
 ###        --region ${{ secrets \
 #        --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }" 
-# aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET } 2>/dev/null || \
-#        aws s3api create-bucket \
-#        --bucket "${{ secrets.S3_BUCKET }" \
-#       --region "${{ secrets.AWS_REGION }" \
-#       --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }"
