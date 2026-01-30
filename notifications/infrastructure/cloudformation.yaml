@@ -135,7 +135,7 @@ Resources:
                 Action:
                   - s3:PutObject
                   - s3:GetObject
-                Resource: !Sub '${LeadDataBucket.Arn}/*'
+                Resource: !Sub 'arn:aws:s3:::${LeadDataBucketName}/*'
               - Effect: Allow
                 Action:
                   - s3:ListBucket
@@ -163,7 +163,7 @@ Resources:
                 Action:
                   - s3:GetObject
                   - s3:PutObject
-                Resource: !Sub '${LeadDataBucket.Arn}/*'
+                Resource: !Sub 'arn:aws:s3:::${LeadDataBucketName}/*'
               - Effect: Allow
                 Action:
                   - s3:ListBucket
