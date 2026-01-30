@@ -39,6 +39,7 @@ Resources:
   
   LeadDataBucket:
     Type: AWS::S3::Bucket
+    DependsOn: QueuePolicy
     Properties:
       BucketName: !Sub '${ProjectName}-leads1-${AWS::AccountId}'
       VersioningConfiguration:
@@ -98,12 +99,11 @@ Resources:
           - Effect: Allow
             Principal:
               Service: s3.amazonaws.com
-            Action:
-              - sqs:SendMessage
+            Action: sqs:SendMessage
             Resource: !GetAtt DelayQueue.Arn
             Condition:
               ArnLike:
-                aws:SourceArn: !GetAtt LeadDataBucket.Arn
+                aws:SourceArn: !Sub "arn:aws:s3:::${ProjectName}-leads1-${AWS::AccountId}"
 
   # ============================================
   # SNS Topic for Email Notifications
