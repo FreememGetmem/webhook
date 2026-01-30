@@ -7,7 +7,11 @@ Parameters:
   ProjectName:
     Type: String
     Default: crm-lead-system
-    Description: Project name for resource naming   
+    Description: Project name for resource naming
+
+  Parameters:
+  LeadDataBucketName:
+    Type: String   
 
   SlackWebhookUrl:
     Type: String
@@ -233,7 +237,7 @@ Resources:
       MemorySize: 256
       Environment:
         Variables:
-          BUCKET_NAME: !Ref LeadDataBucket
+          BUCKET_NAME: !Ref LeadDataBucketName
           SOURCE_PREFIX: 'source/'
       Code:
         S3Bucket: !Ref LeadDataBucket 
@@ -252,7 +256,7 @@ Resources:
       MemorySize: 512
       Environment:
         Variables:
-          BUCKET_NAME: !Ref LeadDataBucket
+          BUCKET_NAME: !Ref LeadDataBucketName
           SOURCE_PREFIX: 'source/'
           TARGET_PREFIX: 'target/'
           LOOKUP_BUCKET: 'dea-lead-owner'

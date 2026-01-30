@@ -73,6 +73,7 @@ jobs:
         aws cloudformation deploy \
           --stack-name crm-lead-system \
           --template-file notifications/infrastructure/cloudformation.yaml \
+          --parameter-overrides LeadDataBucketName=${{ secrets.S3_BUCKET }} \
           --capabilities CAPABILITY_NAMED_IAM
     
           
