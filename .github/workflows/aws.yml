@@ -79,6 +79,8 @@ jobs:
         aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda1/lead_processor.zip
         aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
 
+        aws s3 ls s3://${{ secrets.S3_BUCKET }}/ --recursive
+
         aws cloudformation validate-template \
           --template-body file://notifications/infrastructure/cloudformation.yaml
           
