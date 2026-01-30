@@ -40,7 +40,7 @@ Resources:
   LeadDataBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${ProjectName}-leads1-${AWS::AccountId}'
+      BucketName: !Sub '${ProjectName}-leads-${AWS::AccountId}'
       VersioningConfiguration:
         Status: Enabled
       NotificationConfiguration:
