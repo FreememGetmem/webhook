@@ -80,11 +80,11 @@ jobs:
         aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
 
         aws cloudformation validate-template \
-          --template-body file://notifications/infrastructure/couldformationistia_pipeline.yaml
+          --template-body file://notifications/infrastructure/couldformation.yaml
           
         aws cloudformation deploy \
           --stack-name wistia-pipeline \
-          --template-file notifications/infrastructure/couldformationistia_pipeline.yaml \
+          --template-file notifications/infrastructure/couldformation.yaml \
           --parameter-overrides LeadDataBucket=${{ secrets.S3_BUCKET }} \
           --capabilities CAPABILITY_NAMED_IAM
     
