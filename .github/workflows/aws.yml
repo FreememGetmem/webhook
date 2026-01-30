@@ -73,15 +73,11 @@ jobs:
 
         aws cloudformation wait stack-delete-complete --stack-name wistia-pipeline --region us-west-1
 
-        if aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET }} 2>/dev/null; then
-          echo "✅ Bucket ${{ secrets.S3_BUCKET }} already exists"
-        else
-          echo "🚀 Creating bucket ${{ secrets.S3_BUCKET }}"
-          aws s3api create-bucket \
-            --bucket "${{ secrets.S3_BUCKET }}" \
-            --region "${{ secrets.AWS_REGION }}" \
-            --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }}"
-        fi
+        aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET }} 2>/dev/null || \
+        aws s3api create-bucket \
+        --bucket "${{ secrets.S3_BUCKET }}" \
+        --region "${{ secrets.AWS_REGION }}" \
+        --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }}"        
 
         aws cloudformation validate-template \
           --template-body file://notificatiobs/infrastructure/couldformationistia_pipeline.yaml
