@@ -234,7 +234,7 @@ Resources:
           BUCKET_NAME: !Ref LeadDataBucket
           SOURCE_PREFIX: 'source/'
       Code:
-        S3Bucket: !REF LeadDataBucket 
+        S3Bucket: !Ref LeadDataBucket 
         S3Key: lambda2/webhook_ingetsion.zip 
           
 
@@ -258,7 +258,7 @@ Resources:
           USE_SLACK: !If [UseSlack, 'true', 'false']
           USE_EMAIL: !If [UseEmail, 'true', 'false']
       Code:
-        S3Bucket: !REF LeadDataBucket 
+        S3Bucket: !Ref LeadDataBucket 
         S3Key: lambda1/lead_processor.zip
           
 
