@@ -58,13 +58,7 @@ jobs:
     # -----------------------------------
     # Deploy CloudFormation Stack
     # -----------------------------------
-    - name: Deploy Infrastructure
-      run: |        
-        
-        aws cloudformation delete-stack --stack-name crm-lead-system --region us-west-1
-
-        aws cloudformation wait stack-delete-complete --stack-name crm-lead-system --region us-west-1 
-
+    
     # -----------------------------------
     # Upload Lambda ZIP to S3
     # -----------------------------------
@@ -79,7 +73,6 @@ jobs:
         aws cloudformation deploy \
           --stack-name crm-lead-system \
           --template-file notifications/infrastructure/cloudformation.yaml \
-          --parameter-overrides LeadDataBucket=${{ secrets.S3_BUCKET }} \
           --capabilities CAPABILITY_NAMED_IAM
     
           
