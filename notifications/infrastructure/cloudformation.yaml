@@ -224,6 +224,7 @@ Resources:
   
   WebhookLambda:
     Type: AWS::Lambda::Function
+    DependsOn: LeadDataBucket
     Properties:
       FunctionName: !Sub '${ProjectName}-webhook'
       Runtime: python3.11
@@ -236,12 +237,13 @@ Resources:
           BUCKET_NAME: !Ref LeadDataBucket
           SOURCE_PREFIX: 'source/'
       Code:
-        S3Bucket: !Ref ArtifactBucket 
-        S3Key: lambda2/webhook_ingetsion.zip 
+        S3Bucket: !Ref LeadDataBucket 
+        S3Key: lambda2/webhook_ingestion.zip 
           
 
   ProcessorLambda:
     Type: AWS::Lambda::Function
+    DependsOn: LeadDataBucket
     Properties:
       FunctionName: !Sub '${ProjectName}-processor'
       Runtime: python3.11
@@ -260,7 +262,7 @@ Resources:
           USE_SLACK: !If [UseSlack, 'true', 'false']
           USE_EMAIL: !If [UseEmail, 'true', 'false']
       Code:
-        S3Bucket: !Ref ArtifactBucket 
+        S3Bucket: !Ref LeadDataBucket 
         S3Key: lambda1/lead_processor.zip
           
 
