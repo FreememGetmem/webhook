@@ -35,37 +35,6 @@ Conditions:
   UseEmail: !Not [!Equals [!Ref NotificationEmail, '']]
 
 Resources:
-
-  # ============================================
-  # S3 Bucket for Lead Data
-  # ============================================
-  
-  LeadDataBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      BucketName: !Sub '${ProjectName}-leads-${AWS::AccountId}'
-      VersioningConfiguration:
-        Status: Enabled
-      NotificationConfiguration:
-        QueueConfigurations:
-          - Event: s3:ObjectCreated:*
-            Queue: !GetAtt DelayQueue.Arn
-            Filter:
-              S3Key:
-                Rules:
-                  - Name: prefix
-                    Value: source/
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      Tags:
-        - Key: Project
-          Value: !Ref ProjectName
-
   # ============================================
   # SQS Queue with Delay
   # ============================================
@@ -107,7 +76,7 @@ Resources:
             Resource: !GetAtt DelayQueue.Arn
             Condition:
               ArnLike:
-                aws:SourceArn: !GetAtt LeadDataBucket.Arn
+                aws:SourceArn: !Sub 'arn:aws:s3:::${LeadDataBucketName}'
 
   # ============================================
   # SNS Topic for Email Notifications
@@ -170,7 +139,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:ListBucket
-                Resource: !GetAtt LeadDataBucket.Arn
+                Resource: !Sub 'arn:aws:s3:::${LeadDataBucketName}'
 
   ProcessorLambdaRole:
     Type: AWS::IAM::Role
@@ -198,7 +167,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:ListBucket
-                Resource: !GetAtt LeadDataBucket.Arn
+                Resource: !Sub 'arn:aws:s3:::${LeadDataBucketName}'
               - Effect: Allow
                 Action:
                   - sqs:ReceiveMessage
