@@ -83,7 +83,7 @@ jobs:
           --template-body file://notifications/infrastructure/cloudformation.yaml
           
         aws cloudformation deploy \
-          --stack-name wistia-pipeline \
+          --stack-name webhook-pipeline \
           --template-file notifications/infrastructure/cloudformation.yaml \
           --parameter-overrides LeadDataBucket=${{ secrets.S3_BUCKET }} \
           --capabilities CAPABILITY_NAMED_IAM
