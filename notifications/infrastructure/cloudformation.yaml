@@ -195,7 +195,6 @@ Resources:
   
   WebhookLambda:
     Type: AWS::Lambda::Function
-    DependsOn: LeadDataBucket
     Properties:
       FunctionName: !Sub '${ProjectName}-webhook'
       Runtime: python3.11
@@ -214,7 +213,6 @@ Resources:
 
   ProcessorLambda:
     Type: AWS::Lambda::Function
-    DependsOn: LeadDataBucket
     Properties:
       FunctionName: !Sub '${ProjectName}-processor'
       Runtime: python3.11
@@ -312,7 +310,7 @@ Outputs:
 
   BucketName:
     Description: 'S3 bucket for lead data'
-    Value: !Ref LeadDataBucket
+    Value: !Ref LeadDataBucketName
     Export:
       Name: !Sub '${AWS::StackName}-BucketName'
 
