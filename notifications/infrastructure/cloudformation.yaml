@@ -8,8 +8,7 @@ Parameters:
     Type: String
     Default: crm-lead-system
     Description: Project name for resource naming
-
-  Parameters:
+  
   LeadDataBucketName:
     Type: String   
 
