@@ -61,9 +61,9 @@ jobs:
     - name: Deploy Infrastructure
       run: |        
         
-        aws cloudformation delete-stack --stack-name wistia-pipeline --region us-west-1
+        aws cloudformation delete-stack --stack-name crm-lead-system --region us-west-1
 
-        aws cloudformation wait stack-delete-complete --stack-name wistia-pipeline --region us-west-1
+        aws cloudformation wait stack-delete-complete --stack-name crm-lead-system --region us-west-1
 
         aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET }} 2>/dev/null || \
         aws s3api create-bucket \
@@ -83,7 +83,7 @@ jobs:
           --template-body file://notifications/infrastructure/cloudformation.yaml
           
         aws cloudformation deploy \
-          --stack-name webhook-pipeline \
+          --stack-name crm-lead-system \
           --template-file notifications/infrastructure/cloudformation.yaml \
           --parameter-overrides LeadDataBucket=${{ secrets.S3_BUCKET }} \
           --capabilities CAPABILITY_NAMED_IAM
