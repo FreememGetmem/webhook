@@ -1,0 +1,94 @@
+name: Webhook Data Pipeline CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # -----------------------------------
+    # Checkout repository
+    # -----------------------------------
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    # -----------------------------------
+    # Setup Python
+    # -----------------------------------
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    # -----------------------------------
+    # Install dependencies & lint
+    # -----------------------------------
+    - name: Install dependencies
+      run: |
+        pip install flake8
+        pip install -r notifications/requirements.txt
+
+    - name: Run linting
+      run: |
+        flake8 lambda --max-line-length=120
+
+    # -----------------------------------
+    # Package Lambda
+    # -----------------------------------
+    - name: Build Lambda ZIP
+      run: |
+        cd lambda
+        zip -r ../lambda/lead_processor.zip .
+        zip -r ../lambda/webhook_ingestion.zip .
+
+    # -----------------------------------
+    # Configure AWS Credentials
+    # -----------------------------------
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    # -----------------------------------
+    # Upload Lambda ZIP to S3
+    # -----------------------------------
+    - name: Upload Lambda package
+      run: |
+        aws s3 cp lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda/lead_processor.zip
+        aws s3 cp webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda/webhook_ingestion.zip
+
+    # -----------------------------------
+    # Deploy CloudFormation Stack
+    # -----------------------------------
+    - name: Deploy Infrastructure
+      run: |        
+        
+        aws cloudformation delete-stack --stack-name wistia-pipeline --region us-west-1
+
+        aws cloudformation wait stack-delete-complete --stack-name wistia-pipeline --region us-west-1
+
+        if aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET }} 2>/dev/null; then
+          echo "✅ Bucket ${{ secrets.S3_BUCKET }} already exists"
+        else
+          echo "🚀 Creating bucket ${{ secrets.S3_BUCKET }}"
+          aws s3api create-bucket \
+            --bucket "${{ secrets.S3_BUCKET }}" \
+            --region "${{ secrets.AWS_REGION }}" \
+            --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }}"
+        fi
+
+        aws cloudformation validate-template \
+          --template-body file://notificatiobs/infrastructure/couldformationistia_pipeline.yaml
+          
+        aws cloudformation deploy \
+          --stack-name wistia-pipeline \
+          --template-file notifications/infrastructure/couldformationistia_pipeline.yaml \
+          --parameter-overrides LeadDataBucket=${{ secrets.S3_BUCKET }} \
+          --capabilities CAPABILITY_NAMED_IAM
+          
