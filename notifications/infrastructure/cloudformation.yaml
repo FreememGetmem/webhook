@@ -198,7 +198,7 @@ Resources:
     Properties:
       FunctionName: !Sub '${ProjectName}-webhook'
       Runtime: python3.11
-      Handler: index.lambda_handler
+      Handler: webhook_ingestion.lambda_handler
       Role: !GetAtt WebhookLambdaRole.Arn
       Timeout: 30
       MemorySize: 256
@@ -216,7 +216,7 @@ Resources:
     Properties:
       FunctionName: !Sub '${ProjectName}-processor'
       Runtime: python3.11
-      Handler: index.lambda_handler
+      Handler: lead_processor.lambda_handler
       Role: !GetAtt ProcessorLambdaRole.Arn
       Timeout: 60
       MemorySize: 512
