@@ -297,18 +297,7 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebhookApi}/*/*'
 
-  LeadBucketNotification:
-    Type: AWS::S3::BucketNotification
-    Properties:
-      Bucket: !Ref LeadDataBucketName
-      QueueConfigurations:
-        - Event: s3:ObjectCreated:*
-          Queue: !GetAtt DelayQueue.Arn
-          Filter:
-            S3Key:
-              Rules:
-                - Name: prefix
-                  Value: source/
+
 
 # ============================================
 # Outputs
