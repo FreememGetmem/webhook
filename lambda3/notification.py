@@ -3,6 +3,7 @@ import cfnresponse
 import json
 
 
+
 s3 = boto3.client('s3')
 
 
