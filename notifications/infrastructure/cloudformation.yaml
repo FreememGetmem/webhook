@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  Automated Lead Assignment and Notification System
+  Automated Lead Assignment and Notification System 
   CRM Webhook -> API Gateway -> Lambda -> S3 -> SQS (10min delay) -> Lambda -> Lookup -> Notification
 
 Parameters:
