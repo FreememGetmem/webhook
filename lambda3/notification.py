@@ -18,7 +18,7 @@ def handler(event, context):
                 current = s3.get_bucket_notification_configuration(Bucket=bucket)
                 # Remove our queue configuration
                 queue_configs = [q for q in current.get('QueueConfigurations', [])
-                                if q.get('QueueArn') != queue_arn]                
+                                 if q.get('QueueArn') != queue_arn]
                 # Update with remaining configs
                 new_config = {}
                 if queue_configs:
@@ -31,7 +31,6 @@ def handler(event, context):
                 print(f"Error during delete: {str(e)}")
             cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
             return
-        
         # Create or Update
         print(f"Configuring S3 notification for bucket: {bucket}")
         # Get existing configuration
