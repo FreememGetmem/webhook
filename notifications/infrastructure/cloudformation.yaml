@@ -42,7 +42,7 @@ Resources:
   DelayQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub '${ProjectName}-delay-queue'
+      # QueueName: !Sub '${ProjectName}-delay-queue'
       DelaySeconds: !Ref DelaySeconds
       VisibilityTimeout: 300
       MessageRetentionPeriod: 1209600
@@ -56,7 +56,7 @@ Resources:
   DeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub '${ProjectName}-dlq'
+      # QueueName: !Sub '${ProjectName}-dlq'
       MessageRetentionPeriod: 1209600
       Tags:
         - Key: Project
