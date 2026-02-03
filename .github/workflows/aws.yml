@@ -68,7 +68,7 @@ jobs:
     # -------------------------------------
     # Deleting previous stack and checking
     # -------------------------------------
-    - name: Deploy Infrastructure
+    - name: Deleting previous stack and checking
       run: |        
         
         aws cloudformation delete-stack --stack-name crm-lead-system --region us-west-1
@@ -84,7 +84,7 @@ jobs:
     # -----------------------------------
     # Upload Lambda ZIP to S3
     # -----------------------------------
-    - name: Upload Lambda package
+    - name: Upload Lambda ZIP to S3
       run: |
         aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda1/lead_processor.zip
         aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
@@ -93,7 +93,7 @@ jobs:
     # -----------------------------------
     # Verification of rep. creation
     # -----------------------------------
-    - name: Upload Lambda package
+    - name: Verification of rep. creation
       run: |
         aws s3 ls s3://${{ secrets.S3_BUCKET }}/ --recursive
 
@@ -108,7 +108,7 @@ jobs:
     # -----------------------------------
     # Deploy CloudFormation
     # -----------------------------------
-    - name: Upload Lambda package
+    - name: Deploy CloudFormation
       run: |
         aws cloudformation validate-template \
           --template-body file://notifications/infrastructure/cloudformation.yaml
