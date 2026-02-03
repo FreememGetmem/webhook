@@ -5,6 +5,8 @@ boto3>=1.26.0
 # HTTP client for external API calls
 urllib3>=2.0.0
 
+
+
 # For local testing
 pytest>=7.4.0
 moto>=4.2.0  # AWS service mocking
