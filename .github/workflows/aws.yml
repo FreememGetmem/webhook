@@ -36,6 +36,7 @@ jobs:
       run: |
         flake8 lambda1 --max-line-length=120
         flake8 lambda2 --max-line-length=120
+        flake8 lambda3 --max-line-length=120
 
     # -----------------------------------
     # Package Lambda
@@ -48,6 +49,10 @@ jobs:
         
         cd lambda2
         zip -r webhook_ingestion.zip .
+        cd ..
+
+        cd lambda3
+        zip -r notification.zip .
         cd ..
 
     # -----------------------------------
@@ -83,6 +88,7 @@ jobs:
       run: |
         aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda1/lead_processor.zip
         aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
+        aws s3 cp lambda3/notification.zip s3://${{ secrets.S3_BUCKET }}/lambda3/notification.zip
 
         aws s3 ls s3://${{ secrets.S3_BUCKET }}/ --recursive
 

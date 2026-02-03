@@ -79,57 +79,6 @@ Resources:
                 aws:SourceArn: !Sub 'arn:aws:s3:::${LeadDataBucketName}'
 
   # ============================================
-  # Custom Resource to Configure S3 Notifications
-  # ============================================
-  
-  S3NotificationFunctionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: S3NotificationPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:PutBucketNotification
-                  - s3:GetBucketNotification
-                Resource: !Sub 'arn:aws:s3:::${LeadDataBucketName}'
-
-  S3NotificationFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub '${ProjectName}-s3-notification-config'
-      Runtime: python3.11
-      Handler: index.handler
-      Role: !GetAtt S3NotificationFunctionRole.Arn
-      Timeout: 60
-      Code:
-        S3Bucket: !Ref LeadDataBucketName 
-        S3Key: lambda3/notification.zip
-          
-
-  S3NotificationConfiguration:
-    Type: Custom::S3BucketNotification
-    DependsOn:
-      - QueuePolicy
-      - DelayQueue
-    Properties:
-      ServiceToken: !GetAtt S3NotificationFunction.Arn
-      BucketName: !Ref LeadDataBucketName
-      QueueArn: !GetAtt DelayQueue.Arn
-      Prefix: 'source/'
-
-  # ============================================
   # SNS Topic for Email Notifications
   # ============================================
   
@@ -372,12 +321,6 @@ Outputs:
     Value: !Ref DelayQueue
     Export:
       Name: !Sub '${AWS::StackName}-QueueUrl'
-  
-  DelayQueueArn:
-    Description: 'SQS queue ARN'
-    Value: !GetAtt DelayQueue.Arn
-    Export:
-      Name: !Sub '${AWS::StackName}-QueueArn'
 
   DeadLetterQueueUrl:
     Description: 'Dead letter queue URL'
@@ -403,7 +346,4 @@ Outputs:
     Value: !Ref ProcessorLambda
     Export:
       Name: !Sub '${AWS::StackName}-ProcessorLambda'
-
-  S3NotificationStatus:
-    Description: 'S3 notification configuration status'
-    Value: 'Configured via Custom Resource'
+# crm-lead-system-leads-635374934580 bucket
