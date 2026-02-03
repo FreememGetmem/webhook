@@ -65,9 +65,9 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}    
 
-    # -----------------------------------
-    # Deploy CloudFormation Stack
-    # -----------------------------------
+    # -------------------------------------
+    # Deleting previous stack and checking
+    # -------------------------------------
     - name: Deploy Infrastructure
       run: |        
         
@@ -89,7 +89,12 @@ jobs:
         aws s3 cp lambda1/lead_processor.zip s3://${{ secrets.S3_BUCKET }}/lambda1/lead_processor.zip
         aws s3 cp lambda2/webhook_ingestion.zip s3://${{ secrets.S3_BUCKET }}/lambda2/webhook_ingestion.zip
         aws s3 cp lambda3/notification.zip s3://${{ secrets.S3_BUCKET }}/lambda3/notification.zip
-
+    
+    # -----------------------------------
+    # Verification of rep. creation
+    # -----------------------------------
+    - name: Upload Lambda package
+      run: |
         aws s3 ls s3://${{ secrets.S3_BUCKET }}/ --recursive
 
         aws s3api head-object \
@@ -99,8 +104,12 @@ jobs:
         aws s3api head-object \
         --bucket "${{ secrets.S3_BUCKET }}" \
         --key lambda2/webhook_ingestion.zip
-
-
+    
+    # -----------------------------------
+    # Deploy CloudFormation
+    # -----------------------------------
+    - name: Upload Lambda package
+      run: |
         aws cloudformation validate-template \
           --template-body file://notifications/infrastructure/cloudformation.yaml
           

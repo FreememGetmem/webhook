@@ -110,7 +110,7 @@ Resources:
     Properties:
       FunctionName: !Sub '${ProjectName}-s3-notification-config'
       Runtime: python3.11
-      Handler: index.handler
+      Handler: notification.handler
       Role: !GetAtt S3NotificationFunctionRole.Arn
       Timeout: 60
       Code:
