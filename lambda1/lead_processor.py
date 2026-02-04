@@ -103,7 +103,7 @@ def read_s3_json(bucket, key, retries=3):
         try:
             obj = s3.get_object(Bucket=bucket, Key=key)
             return json.loads(obj["Body"].read())
-        except ClientError as e:
+        except ClientError :
             if attempt == retries - 1:
                 raise
             logger.warning("S3 read retry", extra={"attempt": attempt + 1})
