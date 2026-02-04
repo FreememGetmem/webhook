@@ -21,7 +21,7 @@ Parameters:
   NotificationEmail:
     Type: String
     Description: Email address for lead notifications (leave empty to skip)
-    Default: ''
+    Default: 'morndour83@hotmail.com'
 
   DelaySeconds:
     Type: Number
