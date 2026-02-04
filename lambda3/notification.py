@@ -47,7 +47,7 @@ def send_response(event, context, status, reason=None):
             timeout=urllib3.Timeout(connect=5.0, read=5.0),
         )
         logger.info("CloudFormation response sent: %s", status)
-    except Exception as e:
+    except Exception:
         # At this point we can only log — CFN timeout is unavoidable
         logger.error("FAILED to send CloudFormation response", exc_info=True)
 
