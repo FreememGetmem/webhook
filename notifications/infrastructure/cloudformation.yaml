@@ -108,7 +108,6 @@ Resources:
   S3NotificationFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub '${ProjectName}-s3-config-${AWS::StackName}'
       Runtime: python3.11
       Handler: notification.handler
       Role: !GetAtt S3NotificationFunctionRole.Arn
