@@ -1,6 +1,7 @@
 import json
 import urllib3
 import boto3
+
 http = urllib3.PoolManager()
 s3 = boto3.client("s3")
 
