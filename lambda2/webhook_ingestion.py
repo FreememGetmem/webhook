@@ -27,11 +27,15 @@ SOURCE_PREFIX = os.environ.get("SOURCE_PREFIX", "source/")
 # -----------------------
 # Custom Exceptions
 # -----------------------
+
+
 class ValidationError(Exception):
     pass
 
+
 class RetryableError(Exception):
     pass
+
 
 # -----------------------
 # Retry Decorator
@@ -55,6 +59,7 @@ def with_retry(max_attempts=3, base_delay=0.5):
                     time.sleep(sleep_time)
         return wrapper
     return decorator
+
 
 # -----------------------
 # Lambda Handler
@@ -93,6 +98,7 @@ def lambda_handler(event, context):
         logger.error("Unhandled error", exc_info=True, extra={"request_id": request_id})
         return create_response(500, {"error": "Internal server error"})
 
+
 # -----------------------
 # Helpers
 # -----------------------
@@ -116,6 +122,7 @@ def validate_webhook(body):
         if field not in event:
             raise ValidationError(f"Missing required field: {field}")
 
+
 def extract_lead_data(body):
     event = body["event"]
     data = event.get("data", {})
@@ -132,6 +139,7 @@ def extract_lead_data(body):
         "subscription_id": body.get("subscription_id"),
         "event_id": event.get("id"),
     }
+
 
 # -----------------------
 # S3 Storage (with retry)
@@ -169,6 +177,7 @@ def store_lead_in_s3(lead_data, full_body):
             raise RetryableError(error_code)
 
         raise
+
 
 # -----------------------
 # HTTP Response
