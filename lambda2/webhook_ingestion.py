@@ -94,7 +94,7 @@ def lambda_handler(event, context):
         logger.warning("Validation failed", extra={"request_id": request_id, "error": str(e)})
         return create_response(400, {"error": str(e)})
 
-    except Exception as e:
+    except Exception:
         logger.error("Unhandled error", exc_info=True, extra={"request_id": request_id})
         return create_response(500, {"error": "Internal server error"})
 
@@ -109,6 +109,7 @@ def parse_body(event):
         return event
     except json.JSONDecodeError:
         raise ValidationError("Invalid JSON payload")
+
 
 def validate_webhook(body):
     event = body.get("event")
