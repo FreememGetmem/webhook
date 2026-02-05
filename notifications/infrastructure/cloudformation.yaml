@@ -16,12 +16,12 @@ Parameters:
     Type: String
     NoEcho: true
     Description: Slack incoming webhook URL for notifications (leave empty to skip)
-    Default: 'https://mor-hjl3638.slack.com'
+    Default: ''
 
   NotificationEmail:
     Type: String
     Description: Email address for lead notifications (leave empty to skip)
-    Default: ''
+    Default: 'morndour83@hotmail.com'
 
   DelaySeconds:
     Type: Number
