@@ -7,7 +7,7 @@ This system automates the capture of new leads from Close CRM, enriches them wit
 ## 🏗️ Architecture
 
 ```
-<img width="1044" height="609" alt="image" src="https://github.com/user-attachments/assets/d06f6af7-862d-487e-878a-a5b801698718" />
+<img width="1044" height="609" alt="image" src="https://github.com/FreememGetmem/webhook/blob/main/image.png" />
 
 
 ┌────────────────────────────┐
