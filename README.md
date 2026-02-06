@@ -7,7 +7,8 @@ This system automates the capture of new leads from Close CRM, enriches them wit
 ## 🏗️ Architecture
 
 ```
-![alt text](image.png)
+<img width="1044" height="609" alt="image" src="https://github.com/user-attachments/assets/d06f6af7-862d-487e-878a-a5b801698718" />
+
 
 ┌────────────────────────────┐
 │   Close CRM (Webhook)      │
